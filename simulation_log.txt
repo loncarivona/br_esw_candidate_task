@@ -1,0 +1,90 @@
+[INF] Relay controller initialized with 2 relay(s)
+
+--- WELDED ---
+WELDED tick= 0 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick= 1 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 2 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 3 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 4 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 5 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 6 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick= 7 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick= 8 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick= 9 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=10 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=11 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=12 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=13 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=14 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=15 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=16 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=17 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=18 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=19 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=20 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=21 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=22 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=23 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=24 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=25 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=26 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=27 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=28 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=29 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=30 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+[WRN] Relay fault detected -> entering ERROR state, opening all relays
+[WRN]   Relay_NO_1: WELDED
+WELDED tick=31 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=32 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=33 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=CLOSED fault=NONE
+WELDED tick=34 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=35 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=36 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=37 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=38 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+WELDED tick=39 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=WELDED | Relay_NC_1 fb=OPEN fault=NONE
+[INF] Relay controller initialized with 2 relay(s)
+
+--- CONSTANTLY_OPEN ---
+CONSTANTLY_OPEN tick= 0 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 1 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 2 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 3 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 4 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 5 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 6 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick= 7 | ctrl=NORMAL | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick= 8 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick= 9 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=10 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=11 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=12 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=13 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=14 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=15 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=16 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=17 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=18 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=19 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=20 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=21 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=22 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=23 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=24 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=CLOSED fault=NONE
+CONSTANTLY_OPEN tick=25 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick=26 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick=27 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick=28 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+CONSTANTLY_OPEN tick=29 | ctrl=NORMAL | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=NONE
+[WRN] Relay fault detected -> entering ERROR state, opening all relays
+[WRN]   Relay_NC_1: CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=30 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=31 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=CLOSED fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=32 | ctrl=ERROR | Relay_NO_1 fb=CLOSED fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=33 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=34 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=35 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=36 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=37 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=38 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN
+CONSTANTLY_OPEN tick=39 | ctrl=ERROR | Relay_NO_1 fb=OPEN fault=NONE | Relay_NC_1 fb=OPEN fault=CONSTANTLY_OPEN

@@ -25,23 +25,37 @@ CONSTANTLY_OPEN on relay 1, with controller re-init between them).
 
 ## Build and run
 
-Build the demo:
+Two demo builds:
+
+| Target | Output | Logging |
+|--------|--------|---------|
+| `make prod` | `build/prod/relay_controller_demo` | off (no stdio, zero log overhead) |
+| `make debug` | `build/debug/relay_controller_demo` | on (`RELAY_LOG_*` via stdio on host) |
+
+`make` defaults to **prod**. Unit tests always use the prod library (no logging).
+
+Production / target-style build:
 
 ```bash
-make
+make prod
+./build/prod/relay_controller_demo
 ```
 
-Run:
+Host demo with tick-by-tick trace output:
 
 ```bash
-./build/relay_controller_demo
+make debug
+./build/debug/relay_controller_demo
 ```
 
 Or build and run in one step:
 
 ```bash
-make run
+make run-prod
+make run-debug
 ```
+
+`make run` is an alias for `make run-debug`.
 
 ## Unit tests
 
@@ -66,14 +80,14 @@ ctest --test-dir build/test --output-on-failure
 ## Documentation
 
 - Write-up: `docs/BR_ESW_Relay_Controller_Solution.txt`
-- Diagrams: `docs/architecture.md`
+- Diagrams: `docs/architecture.md` (Mermaid + PlantUML in `docs/plantuml/`)
 
 ## Layout
 
 | Topic | Location |
 |-------|----------|
 | Design, assumptions, exam mapping | `docs/BR_ESW_Relay_Controller_Solution.txt` |
-| Module / state / flow diagrams | `docs/architecture.md` |
+| Module / state / flow diagrams | `docs/architecture.md`, `docs/plantuml/` |
 | Application logic | `src/relay_control/`, `src/scheduler/`, `src/main.c` |
 | HAL (simulated plant / target stub) | `src/relay_io/` |
 | Unit tests | `test/` |
@@ -81,7 +95,7 @@ ctest --test-dir build/test --output-on-failure
 ```
 src/
   relay_io/        DPO/DI layer (sim or hw)
-  relay_control/   relay_instance + relay_controller
+  relay_control/   relay_instance + relay_controller + relay_log.h
   scheduler/
   main.c
 docs/

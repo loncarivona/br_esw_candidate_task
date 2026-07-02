@@ -6,9 +6,9 @@
  */
 
 #include "relay_control/relay_controller.h"
+#include "relay_control/relay_log.h"
 
 #include <stddef.h>
-#include <stdio.h>
 
 /**
  * @brief Find the relay instance that matches @p relay_id.
@@ -48,20 +48,20 @@ static bool ValidateConfig(const RelayInstanceConfig *config, uint8_t count) {
   for (uint8_t i = 0U; i < count; ++i) {
     for (uint8_t j = (uint8_t)(i + 1U); j < count; ++j) {
       if (config[i].relay_id == config[j].relay_id) {
-        printf("[ERR] Duplicate relay_id %u in configuration\n",
-               (unsigned)config[i].relay_id);
+        RELAY_LOG_ERR("Duplicate relay_id %u in configuration\n",
+                      (unsigned)config[i].relay_id);
         return false;
       }
 
       if (config[i].dpo_channel == config[j].dpo_channel) {
-        printf("[ERR] Duplicate dpo_channel %u in configuration\n",
-               (unsigned)config[i].dpo_channel);
+        RELAY_LOG_ERR("Duplicate dpo_channel %u in configuration\n",
+                      (unsigned)config[i].dpo_channel);
         return false;
       }
 
       if (config[i].di_channel == config[j].di_channel) {
-        printf("[ERR] Duplicate di_channel %u in configuration\n",
-               (unsigned)config[i].di_channel);
+        RELAY_LOG_ERR("Duplicate di_channel %u in configuration\n",
+                      (unsigned)config[i].di_channel);
         return false;
       }
     }
@@ -89,11 +89,12 @@ static void ForceOpenAll(RelayController *self) {
 }
 
 /**
- * @brief Map a fault enum to a human-readable label for logging.
+ * @brief Map a fault enum to a human-readable label for debug logging.
  *
  * @param [in] fault - Fault classification to name.
  * @return Static string label ("WELDED", "CONSTANTLY_OPEN", or "NONE").
  */
+#if defined(RELAY_LOG_ENABLED)
 static const char *FaultName(RelayFault fault) {
   switch (fault) {
     case kRelayFaultWelded:
@@ -104,6 +105,7 @@ static const char *FaultName(RelayFault fault) {
       return "NONE";
   }
 }
+#endif
 
 /**
  * @brief Return whether any relay instance has a latched fault.
@@ -128,18 +130,18 @@ static bool AnyFaultDetected(const RelayController *self) {
 bool RelayController_Init(RelayController *self, const RelayInstanceConfig *config,
                           uint8_t count) {
   if (self == NULL) {
-    printf("[ERR] Invalid relay controller (NULL)\n");
+    RELAY_LOG_ERR("%s", "Invalid relay controller (NULL)\n");
     return false;
   }
 
   if (config == NULL || count == 0U) {
-    printf("[ERR] Invalid relay configuration\n");
+    RELAY_LOG_ERR("%s", "Invalid relay configuration\n");
     return false;
   }
 
   if (count > kRelayMaxInstances) {
-    printf("[ERR] Configured relays (%u) exceed max (%u)\n", (unsigned)count,
-           (unsigned)kRelayMaxInstances);
+    RELAY_LOG_ERR("Configured relays (%u) exceed max (%u)\n", (unsigned)count,
+                  (unsigned)kRelayMaxInstances);
     return false;
   }
 
@@ -154,8 +156,8 @@ bool RelayController_Init(RelayController *self, const RelayInstanceConfig *conf
     RelayInstance_Init(&self->_instances[i], &config[i]);
   }
 
-  printf("[INF] Relay controller initialized with %u relay(s)\n",
-         (unsigned)count);
+  RELAY_LOG_INF("Relay controller initialized with %u relay(s)\n",
+                (unsigned)count);
   return true;
 }
 
@@ -180,13 +182,15 @@ void RelayController_Process(RelayController *self) {
   }
 
   if (self->_state == kRelayControllerStateNormal && AnyFaultDetected(self)) {
-    printf("[WRN] Relay fault detected -> entering ERROR state, opening all relays\n");
+    RELAY_LOG_WRN("%s",
+                  "Relay fault detected -> entering ERROR state, opening all "
+                  "relays\n");
 
     for (uint8_t i = 0U; i < self->_instance_count; ++i) {
       const RelayFault fault = RelayInstance_GetFault(&self->_instances[i]);
       if (fault != kRelayFaultNone) {
-        printf("[WRN]   %s: %s\n", RelayInstance_GetName(&self->_instances[i]),
-               FaultName(fault));
+        RELAY_LOG_WRN("  %s: %s\n", RelayInstance_GetName(&self->_instances[i]),
+                      FaultName(fault));
       }
     }
 
@@ -239,8 +243,8 @@ void RelayController_SetRequest(RelayController *self, uint8_t relay_id,
 
   RelayInstance *instance = (RelayInstance *)FindInstance(self, relay_id);
   if (instance == NULL) {
-    printf("[WRN] SetRequest for unknown relay_id %u ignored\n",
-           (unsigned)relay_id);
+    RELAY_LOG_WRN("SetRequest for unknown relay_id %u ignored\n",
+                  (unsigned)relay_id);
     return;
   }
 

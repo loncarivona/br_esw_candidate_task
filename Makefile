@@ -2,22 +2,38 @@ CC ?= gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Isrc
 LDFLAGS ?=
 
-BUILD_DIR = build
 RELAY_IO_SRC = src/relay_io/relay_io_sim.c
 
-SRCS = \
+CORE_SRCS = \
 	$(RELAY_IO_SRC) \
 	src/relay_control/relay_instance.c \
 	src/relay_control/relay_controller.c \
-	src/scheduler/scheduler.c \
-	src/main.c
+	src/scheduler/scheduler.c
 
+.PHONY: all prod debug clean run run-prod run-debug test
+
+all: prod
+
+prod:
+	$(MAKE) relay_controller_demo BUILD_TYPE=prod
+
+debug:
+	$(MAKE) relay_controller_demo BUILD_TYPE=debug
+
+ifeq ($(BUILD_TYPE),debug)
+BUILD_DIR = build/debug
+CFLAGS += -DRELAY_LOG_ENABLED
+LOG_SRC = src/relay_control/relay_log_host.c
+else
+BUILD_DIR = build/prod
+LOG_SRC =
+endif
+
+SRCS = $(CORE_SRCS) src/main.c $(LOG_SRC)
 OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 TARGET = $(BUILD_DIR)/relay_controller_demo
 
-.PHONY: all clean run test
-
-all: $(TARGET)
+relay_controller_demo: $(TARGET)
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
@@ -27,13 +43,18 @@ $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-run: $(TARGET)
-	./$(TARGET)
+run-prod: prod
+	./build/prod/relay_controller_demo
+
+run-debug: debug
+	./build/debug/relay_controller_demo
+
+run: run-debug
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
 
-TEST_BUILD_DIR = $(BUILD_DIR)/test
+TEST_BUILD_DIR = build/test
 CMAKE ?= $(firstword $(wildcard /usr/bin/cmake /usr/bin/cmake3) cmake)
 GOOGLETEST_DIR = third_party/googletest
 

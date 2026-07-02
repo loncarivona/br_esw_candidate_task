@@ -1,9 +1,13 @@
 # Architecture diagrams
 
-Mermaid diagrams for the BR ESW relay controller solution.
+Mermaid and PlantUML diagrams for the BR ESW relay controller solution.
 
 Full solution write-up (overview, assumptions, timing, demo, build):
 [BR_ESW_Relay_Controller_Solution.txt](BR_ESW_Relay_Controller_Solution.txt)
+
+**PlantUML sources:** [docs/plantuml/](plantuml/) — render with
+[PlantUML](https://plantuml.com/), VS Code PlantUML extension, or
+`java -jar plantuml.jar docs/plantuml/*.puml`.
 
 ---
 
@@ -13,6 +17,9 @@ Three software layers: application injects configuration and drives the periodic
 task; `relay_control` owns the global FSM and one reusable `RelayInstance` per
 relay; `relay_io` provides DPO/DI access. Exactly one HAL implementation
 (`relay_io_hw.c` or `relay_io_sim.c`) is linked at build time.
+
+<details>
+<summary>Mermaid</summary>
 
 ```mermaid
 flowchart TB
@@ -39,6 +46,15 @@ flowchart TB
     IF -.linked impl: target.-> HW
     IF -.linked impl: host.-> SIM
 ```
+
+</details>
+
+<details>
+<summary>PlantUML — <code>plantuml/module_decomposition.puml</code></summary>
+
+Source: [module_decomposition.puml](plantuml/module_decomposition.puml)
+
+</details>
 
 | Layer | Module | Responsibility |
 |-------|--------|----------------|
@@ -75,6 +91,9 @@ Global controller FSM. Faults latch the controller into **ERROR**. The only
 recovery path is **Re-Init** — a new call to `RelayController_Init()`, which
 resets controller state to **NORMAL** and re-initialises all instances.
 
+<details>
+<summary>Mermaid</summary>
+
 ```mermaid
 stateDiagram-v2
     direction LR
@@ -98,6 +117,15 @@ stateDiagram-v2
     end note
 ```
 
+</details>
+
+<details>
+<summary>PlantUML — <code>plantuml/controller_state.puml</code></summary>
+
+Open [controller_state.puml](plantuml/controller_state.puml).
+
+</details>
+
 ---
 
 ## Per-relay execution flow
@@ -109,6 +137,9 @@ sampled feedback every cycle; six **consecutive** mismatch cycles (30 ms) are
 required before latching. Any matching sample clears the mismatch run, so
 alternating bounce (wrong, right, wrong, right, …) cannot accumulate into a
 false fault.
+
+<details>
+<summary>Mermaid</summary>
 
 ```mermaid
 flowchart TD
@@ -122,8 +153,8 @@ flowchart TD
     F --> G
     G --> H[Convert DI to contact state]
     H --> I{Feedback matches applied command?}
-    I -->|Yes, 2 consecutive| J[Clear mismatch counter]
-    I -->|No| K[Increment mismatch counter]
+    I -->|Yes| J[Clear consecutive mismatch counter]
+    I -->|No| K[Increment consecutive mismatch counter]
     K --> L{Mismatch >= 30 ms?}
     L -->|Yes, cmd OPEN| M[Latch fault: WELDED]
     L -->|Yes, cmd CLOSE| N[Latch fault: CONSTANTLY_OPEN]
@@ -133,3 +164,12 @@ flowchart TD
     J --> Q[End cycle]
     O --> Q
 ```
+
+</details>
+
+<details>
+<summary>PlantUML — <code>plantuml/per_relay_flow.puml</code></summary>
+
+Open [per_relay_flow.puml](plantuml/per_relay_flow.puml).
+
+</details>

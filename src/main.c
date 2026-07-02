@@ -12,12 +12,11 @@
  *
  */
 
-#include <stdio.h>
-
 #include "relay_io/relay_io.h"
 #include "relay_io/relay_io_sim.h"
 #include "relay_control/common.h"
 #include "relay_control/relay_controller.h"
+#include "relay_control/relay_log.h"
 #include "scheduler/scheduler.h"
 
 #define TICKS_PER_SCENARIO 40U
@@ -36,6 +35,8 @@ typedef enum {
   kDemoScenarioConstantlyOpen,
 } DemoScenario;
 
+#if defined(RELAY_LOG_ENABLED)
+
 static const char *ContactStr(RelayContactState s) {
   return (s == kRelayContactClosed) ? "CLOSED" : "OPEN";
 }
@@ -48,20 +49,22 @@ static const char *FaultStr(RelayFault f) {
 
 static void PrintStatus(const char *scenario, uint32_t tick,
                         const RelayController *controller) {
-  printf("%s tick=%2lu | ctrl=%s", scenario, (unsigned long)tick,
-         (RelayController_GetState(controller) == kRelayControllerStateError)
-             ? "ERROR"
-             : "NORMAL");
+  RELAY_LOG_RAW("%s tick=%2lu | ctrl=%s", scenario, (unsigned long)tick,
+                (RelayController_GetState(controller) == kRelayControllerStateError)
+                    ? "ERROR"
+                    : "NORMAL");
 
   for (uint8_t i = 0U; i < kRelayCount; ++i) {
     uint8_t id = kRelayConfig[i].relay_id;
-    printf(" | %s fb=%s fault=%s", kRelayConfig[i].name,
-           ContactStr(RelayController_GetContactState(controller, id)),
-           FaultStr(RelayController_GetFault(controller, id)));
+    RELAY_LOG_RAW(" | %s fb=%s fault=%s", kRelayConfig[i].name,
+                  ContactStr(RelayController_GetContactState(controller, id)),
+                  FaultStr(RelayController_GetFault(controller, id)));
   }
 
-  printf("\n");
+  RELAY_LOG_RAW("%s", "\n");
 }
+
+#endif /* RELAY_LOG_ENABLED */
 
 static void ClearSimFaultInjection(void) {
   RelayIoSim_SetStuckClosed(0U, false);
@@ -93,13 +96,20 @@ static void ApplyScenarioEvent(DemoScenario scenario, uint32_t tick,
 
 static void RunScenario(DemoScenario scenario, const char *label,
                         RelayController *controller, Scheduler *scheduler) {
-  printf("\n--- %s ---\n", label);
+#if defined(RELAY_LOG_ENABLED)
+  RELAY_LOG_RAW("\n--- %s ---\n", label);
+#else
+  (void)label;
+#endif
+  (void)scenario;
 
   for (uint32_t tick = 0U; tick < TICKS_PER_SCENARIO; ++tick) {
     ApplyScenarioEvent(scenario, tick, controller);
     RelayIoSim_Update();
     Scheduler_RunTask(scheduler);
+#if defined(RELAY_LOG_ENABLED)
     PrintStatus(label, tick, controller);
+#endif
   }
 }
 
@@ -108,7 +118,7 @@ int main(void) {
   Scheduler scheduler;
 
   if (!RelayIo_Init()) {
-    printf("[ERR] Failed to initialize relay IO\n");
+    RELAY_LOG_ERR("%s", "Failed to initialize relay IO\n");
     return 1;
   }
 

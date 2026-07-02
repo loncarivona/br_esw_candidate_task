@@ -1,0 +1,34 @@
+@startuml module_decomposition
+title Module decomposition
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "Application (main.c)" {
+  [scheduler] as SCH
+  [config table\nkRelayConfig] as CFG
+}
+
+package "relay_control" {
+  [relay_controller\nglobal FSM] as RH
+  [relay_instance x N\nreusable component] as RI
+}
+
+package "relay_io (HAL)" {
+  [relay_io.h\nfunction interface] as IF
+  [relay_io_hw.c\nreal target] as HW
+  [relay_io_sim.c\nsimulated plant] as SIM
+}
+
+CFG --> RH : injected at Init
+SCH --> RH : every 5 ms
+RH --> RI
+RI --> IF
+IF ..> HW : <<link>>\ntarget build
+IF ..> SIM : <<link>>\nhost demo / test
+
+note bottom of IF
+  Exactly one HAL implementation is linked at build time.
+end note
+
+@enduml

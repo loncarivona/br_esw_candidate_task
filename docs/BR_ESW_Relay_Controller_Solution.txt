@@ -60,9 +60,11 @@ main.c).
 -----------
 
 See docs/architecture.md for:
-  - module decomposition
-  - controller state diagram
-  - per-relay execution flowchart
+  - module decomposition (Mermaid + PlantUML)
+  - controller state diagram (Mermaid + PlantUML)
+  - per-relay execution flowchart (Mermaid + PlantUML)
+
+PlantUML sources: docs/plantuml/*.puml
 
 
 5. NO / NC DPO mapping
@@ -116,8 +118,13 @@ in common.h (no runtime ms timers in the controller).
 9. Build and demo
 -----------------
 
-  make
-  ./build/relay_controller_demo
+  make prod
+  ./build/prod/relay_controller_demo
+
+  make debug
+  ./build/debug/relay_controller_demo
+
+  ./build/debug/relay_controller_demo > simulation_log.txt
 
 Demo runs two scenarios (controller re-init between them):
 
@@ -129,7 +136,7 @@ Demo runs two scenarios (controller re-init between them):
     - tick 5: close both relays
     - tick 25: stuck-open relay 1, command CLOSE -> CONSTANTLY_OPEN -> ERROR
 
-  ./build/relay_controller_demo > simulation_log.txt
+Debug logging (RELAY_LOG_*) is compile-time optional — see relay_log.h.
 
 
 10. Project structure

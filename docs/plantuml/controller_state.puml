@@ -1,0 +1,24 @@
+@startuml controller_state
+title Controller state diagram
+
+skinparam shadowing false
+
+[*] --> NORMAL : RelayController_Init()
+
+NORMAL --> ERROR : any relay fault latched
+ERROR --> NORMAL : RelayController_Init()\n(Re-Init)
+
+state NORMAL {
+  NORMAL : Each Process() cycle:
+  NORMAL : - handle OPEN/CLOSE requests
+  NORMAL : - supervise feedback
+}
+
+state ERROR {
+  ERROR : Each Process() cycle:
+  ERROR : - force all relays OPEN
+  ERROR : - block CLOSE requests
+  ERROR : recovery only via Re-Init
+}
+
+@enduml

@@ -118,7 +118,7 @@ in common.h (no runtime ms timers in the controller).
 -----------------
 
   make
-  ./relay_controller_demo
+  ./build/relay_controller_demo
 
 Demo runs two scenarios (controller re-init between them):
 
@@ -130,7 +130,7 @@ Demo runs two scenarios (controller re-init between them):
     - tick 5: close both relays
     - tick 25: stuck-open relay 1, command CLOSE -> CONSTANTLY_OPEN -> ERROR
 
-  ./relay_controller_demo > simulation_log.txt
+  ./build/relay_controller_demo > simulation_log.txt
 
 
 10. Project structure

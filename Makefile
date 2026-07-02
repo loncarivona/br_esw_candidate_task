@@ -2,6 +2,7 @@ CC ?= gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Isrc
 LDFLAGS ?=
 
+BUILD_DIR = build
 RELAY_IO_SRC = src/relay_io/relay_io_sim.c
 
 SRCS = \
@@ -11,21 +12,23 @@ SRCS = \
 	src/scheduler/scheduler.c \
 	src/main.c
 
-OBJS = $(SRCS:.c=.o)
-TARGET = relay_controller_demo
+OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
+TARGET = $(BUILD_DIR)/relay_controller_demo
 
 .PHONY: all clean run
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
+	@mkdir -p $(dir $@)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
-%.o: %.c
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(BUILD_DIR)

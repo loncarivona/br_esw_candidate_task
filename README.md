@@ -6,7 +6,7 @@ Relay controller solution in C.
 
 ```bash
 make
-./relay_controller_demo
+./build/relay_controller_demo
 ```
 
 ## Documentation

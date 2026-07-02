@@ -48,6 +48,26 @@ make debug
 ./build/debug/relay_controller_demo
 ```
 
+Optional: pass a directory containing scenario CSV files (default: `scenarios/`):
+
+```bash
+./build/debug/relay_controller_demo scenarios
+```
+
+Scenario format (`scenarios/welded.csv`):
+
+```csv
+# scenario: WELDED
+# ticks: 40
+# tick,relay,action
+5,0,close
+5,1,close
+25,0,weld
+25,0,open
+```
+
+Actions: `close`, `open`, `weld` (stuck closed), `stuck_open`.
+
 Or build and run in one step:
 
 ```bash

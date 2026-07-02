@@ -29,7 +29,7 @@ BUILD_DIR = build/prod
 LOG_SRC =
 endif
 
-SRCS = $(CORE_SRCS) src/main.c $(LOG_SRC)
+SRCS = $(CORE_SRCS) src/main.c src/scenario/scenario_csv.c $(LOG_SRC)
 OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 TARGET = $(BUILD_DIR)/relay_controller_demo
 

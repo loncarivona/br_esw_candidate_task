@@ -126,7 +126,17 @@ in common.h (no runtime ms timers in the controller).
 
   ./build/debug/relay_controller_demo > simulation_log.txt
 
-Demo runs two scenarios (controller re-init between them):
+Demo runs two CSV scenarios from scenarios/ (controller re-init between them):
+
+  scenarios/welded.csv
+  scenarios/constantly_open.csv
+
+  # scenario: WELDED
+  # tick,relay,action
+  5,0,close
+  5,1,close
+  25,0,weld
+  25,0,open
 
   Scenario 1 — WELDED (relay 0, NO):
     - tick 5: close both relays
@@ -134,9 +144,10 @@ Demo runs two scenarios (controller re-init between them):
 
   Scenario 2 — CONSTANTLY_OPEN (relay 1, NC):
     - tick 5: close both relays
-    - tick 25: stuck-open relay 1, command CLOSE -> CONSTANTLY_OPEN -> ERROR
+    - tick 25: stuck_open relay 1, command CLOSE -> CONSTANTLY_OPEN -> ERROR
 
 Debug logging (RELAY_LOG_*) is compile-time optional — see relay_log.h.
+Scenario CSV loader is host-demo only (stdio), not linked on target MCU.
 
 
 10. Project structure
@@ -146,8 +157,10 @@ Debug logging (RELAY_LOG_*) is compile-time optional — see relay_log.h.
   ├── src/
   │   ├── relay_io/           HAL: DPO/DI + sim + hw stub
   │   ├── relay_control/      relay_instance + relay_controller
+  │   ├── scenario/           CSV scenario loader (host demo)
   │   ├── scheduler/
   │   └── main.c
+  ├── scenarios/              demo CSV scripts
   ├── docs/
   │   ├── architecture.md
   │   └── BR_ESW_Relay_Controller_Solution.txt

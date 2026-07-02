@@ -15,7 +15,7 @@ SRCS = \
 OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 TARGET = $(BUILD_DIR)/relay_controller_demo
 
-.PHONY: all clean run
+.PHONY: all clean run test
 
 all: $(TARGET)
 
@@ -32,3 +32,15 @@ run: $(TARGET)
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+TEST_BUILD_DIR = $(BUILD_DIR)/test
+CMAKE ?= $(firstword $(wildcard /usr/bin/cmake /usr/bin/cmake3) cmake)
+GOOGLETEST_DIR = third_party/googletest
+
+test: $(GOOGLETEST_DIR)/CMakeLists.txt
+	$(CMAKE) -S . -B $(TEST_BUILD_DIR) -DBUILD_DEMO=OFF
+	$(CMAKE) --build $(TEST_BUILD_DIR)
+	ctest --test-dir $(TEST_BUILD_DIR) --output-on-failure
+
+$(GOOGLETEST_DIR)/CMakeLists.txt:
+	bash scripts/fetch_googletest.sh

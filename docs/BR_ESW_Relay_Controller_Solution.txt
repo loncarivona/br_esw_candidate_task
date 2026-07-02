@@ -99,8 +99,7 @@ Faults are latched until re-init.
 
   Task period       5 ms (kRelayTaskPeriodMs)
   DPO settle        1 ms (simulation)
-  Fault window      30 ms (6 cycles at 5 ms period)
-  Mismatch clear    2 consecutive matching samples (contact bounce)
+  Fault window      30 ms (6 consecutive mismatch cycles at 5 ms period)
 
 Each call to Scheduler_RunTask() is one 5 ms task period: it runs
 RelayController_Process() once. On the host demo, main() calls it in a loop as

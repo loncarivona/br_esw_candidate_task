@@ -57,7 +57,6 @@ static void ApplyCommand(RelayInstance *self, RelayCommand command) {
   RelayIo_SetDpo(self->_config->dpo_channel, dpo);
   self->_applied_command = command;
   self->_mismatch_cycles = 0U;
-  self->_match_run = 0U;
 }
 
 /**
@@ -75,18 +74,12 @@ static void DetectFault(RelayInstance *self) {
   const RelayContactState expected =
       Relay_CommandToExpectedContact(self->_applied_command);
 
-  /* Continuous check: feedback must always agree with the applied command. */
+  /* Count consecutive mismatches only. Any matching sample clears the run so
+   * alternating bounce (wrong, right, wrong, right, …) cannot false-positive. */
   if (self->_feedback_contact == expected) {
-    if (self->_match_run < UINT16_MAX) {
-      ++self->_match_run;
-    }
-    if (self->_match_run >= kRelayFeedbackClearCycles) {
-      self->_mismatch_cycles = 0U;
-    }
+    self->_mismatch_cycles = 0U;
     return;
   }
-
-  self->_match_run = 0U;
 
   if (self->_mismatch_cycles < UINT16_MAX) {
     ++self->_mismatch_cycles;

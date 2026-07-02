@@ -31,7 +31,6 @@ typedef struct {
   RelayContactState _feedback_contact;
   RelayFault _fault;
   uint16_t _mismatch_cycles;
-  uint16_t _match_run;
 } RelayInstance;
 
 /**

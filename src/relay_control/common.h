@@ -41,9 +41,6 @@ enum {
   kRelayTaskPeriodMs = 5,
   kRelayDpoSettleMs = 1,
   kRelayFeedbackSettleCycles = 6, /* 30 ms fault window at 5 ms task period */
-  /* Matching feedback samples needed before clearing a mismatch count.
-   * One sample is not enough: the contact can bounce during transitions. */
-  kRelayFeedbackClearCycles = 2,
   kRelayMaxInstances = 10,
 };
 

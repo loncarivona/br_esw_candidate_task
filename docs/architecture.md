@@ -105,9 +105,10 @@ stateDiagram-v2
 One task cycle inside `RelayController_Process()`. When the controller is in
 **ERROR**, every relay receives an effective **OPEN** command regardless of the
 requested state. Fault detection compares the **applied** command against
-sampled feedback every cycle; a mismatch must persist for 30 ms before latching.
-Two consecutive matching samples are required to clear a mismatch count, so a
-single bounce sample during a contact transition does not reset fault detection.
+sampled feedback every cycle; six **consecutive** mismatch cycles (30 ms) are
+required before latching. Any matching sample clears the mismatch run, so
+alternating bounce (wrong, right, wrong, right, …) cannot accumulate into a
+false fault.
 
 ```mermaid
 flowchart TD

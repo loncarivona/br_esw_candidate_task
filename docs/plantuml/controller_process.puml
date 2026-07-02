@@ -1,0 +1,43 @@
+@startuml controller_process
+title Controller execution flow (one 5 ms cycle)
+
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+}
+
+start
+
+:Scheduler_RunTask();
+:RelayController_Process();
+
+switch (controller state?)
+
+case (On)
+  :ProcessOnState();
+  repeat
+    :RelayInstance_Process(relay i,\nallow_close = true);
+    note right: see per-relay flow diagram
+  repeat while (more relays?) is (yes)
+  -> no;
+  if (any fault latched?) then (yes)
+    :EnterErrorState();
+    :NotifyFaults() once per faulted relay;
+    :ForceOpenAll() once;
+  else (no)
+  endif
+
+case (Error)
+  :ProcessErrorState();
+  repeat
+    :RelayInstance_Process(relay i,\nallow_close = false);
+    note right: CLOSE blocked
+  repeat while (more relays?) is (yes)
+  -> no;
+
+endswitch
+
+stop
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml fault_notification
+title Status reporting — getters and optional fault notifier
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "Application" {
+  [reads status after each tick] as APP
+}
+
+package "relay_controller" {
+  [GetContactState\nGetFault\nGetRequest\nGetState] as GET
+  [SetFaultNotifier\nNotifyFaults in EnterErrorState] as NOT
+}
+
+APP --> GET : poll every cycle\nopen/closed, fault, state
+NOT --> APP : optional push\nonce per fault on Error entry
+
+@enduml

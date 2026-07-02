@@ -1,12 +1,10 @@
 /**
  * @file relay_io_sim.h
  *
- * @brief Simulation-only controls for the relay digital IO back-end.
+ * @brief Simulation-only controls for the relay digital IO
  *
- * relay_io_sim.c implements the RelayIo_* interface by emulating the physical
- * world (contactor dynamics, feedback bounce). These extra functions let the
- * demo/test configure relay types and inject faults. They do not exist on the
- * real target, so only the simulation harness (main.c) uses them.
+ * relay_io_sim.c implements the RelayIo_* interface by emulating the controller behavior. 
+ * Allow the demo to configure relay types and inject faults. 
  *
  */
 
@@ -14,7 +12,7 @@
 #define RELAY_IO_RELAY_IO_SIM_H
 
 #include "relay_io/relay_io.h"
-#include "relay_control/common.h"
+#include "relay_control/relay_types.h"
 
 /** @brief Tell the simulation which relay type a channel drives. */
 void RelayIoSim_ConfigureChannel(uint8_t channel, RelayType type);
@@ -26,7 +24,7 @@ void RelayIoSim_SetStuckClosed(uint8_t channel, bool stuck);
 void RelayIoSim_SetStuckOpen(uint8_t channel, bool stuck);
 
 /**
- * @brief Advance the simulated physical world by one task cycle.
+ * @brief Advance the simulation by one task cycle.
  *
  * Represents the plant, not the controller. The demo calls this once per tick
  * before running the controller so feedback reflects the latest DPO command.

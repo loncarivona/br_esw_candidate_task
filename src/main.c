@@ -3,7 +3,7 @@
  *
  * @brief Host-side demo for the relay controller.
  *
- * Runs fault scenarios from CSV scripts in scenarios/ (see scenario_csv.h).
+ * Runs fault scenarios from CSV scripts in simulation_scenarios/ (see scenario_csv.h).
  * Each tick the simulated plant is advanced first, then the controller task is
  * run - mirroring how a periodic RTOS task executes on the target.
  *
@@ -11,54 +11,63 @@
 
 #include "relay_io/relay_io.h"
 #include "relay_io/relay_io_sim.h"
-#include "relay_control/common.h"
+#include "relay_control/relay_types.h"
 #include "relay_control/relay_controller.h"
 #include "relay_control/relay_log.h"
 #include "scenario/scenario_csv.h"
 #include "scheduler/scheduler.h"
 
+#include <stddef.h>
+
 static const RelayInstanceConfig kRelayConfig[] = {
-    {.relay_id = 0U, .type = kRelayTypeNormallyOpen, .dpo_channel = 0U,
-     .di_channel = 0U, .name = "Relay_NO_1"},
-    {.relay_id = 1U, .type = kRelayTypeNormallyClosed, .dpo_channel = 1U,
-     .di_channel = 1U, .name = "Relay_NC_1"},
+    {.relay_id = 0, .type = kRelayTypeNormallyOpen, .dpo_channel = 0,
+     .di_channel = 0, .name = "Relay_NO_1"},
+    {.relay_id = 1, .type = kRelayTypeNormallyClosed, .dpo_channel = 1,
+     .di_channel = 1, .name = "Relay_NC_1"},
 };
 static const uint8_t kRelayCount =
     (uint8_t)(sizeof(kRelayConfig) / sizeof(kRelayConfig[0]));
 
-#if defined(RELAY_LOG_ENABLED)
+#if defined(LOG_ENABLED)
 
-static const char *ContactStr(RelayContactState s) {
-  return (s == kRelayContactClosed) ? "CLOSED" : "OPEN";
+static bool s_fault_header_logged = false;
+
+static const char *RelayNameForId(uint8_t relay_id) {
+  for (uint8_t i = 0; i < kRelayCount; ++i) {
+    if (kRelayConfig[i].relay_id == relay_id) {
+      return kRelayConfig[i].name;
+    }
+  }
+  return "unknown";
 }
 
-static const char *FaultStr(RelayFault f) {
-  if (f == kRelayFaultWelded) return "WELDED";
-  if (f == kRelayFaultConstantlyOpen) return "CONSTANTLY_OPEN";
-  return "NONE";
+static const char *FaultName(RelayFault fault) {
+  switch (fault) {
+    case kRelayFaultWelded:
+      return "WELDED";
+    case kRelayFaultConstantlyOpen:
+      return "CONSTANTLY_OPEN";
+    default:
+      return "NONE";
+  }
 }
 
-static void PrintStatus(const char *scenario, uint32_t tick,
-                        const RelayController *controller) {
-  RELAY_LOG_RAW("%s tick=%2lu | ctrl=%s", scenario, (unsigned long)tick,
-                (RelayController_GetState(controller) == kRelayControllerStateError)
-                    ? "ERROR"
-                    : "NORMAL");
+static void OnRelayFault(uint8_t relay_id, RelayFault fault, void *context) {
+  (void)context;
 
-  for (uint8_t i = 0U; i < kRelayCount; ++i) {
-    uint8_t id = kRelayConfig[i].relay_id;
-    RELAY_LOG_RAW(" | %s fb=%s fault=%s", kRelayConfig[i].name,
-                  ContactStr(RelayController_GetContactState(controller, id)),
-                  FaultStr(RelayController_GetFault(controller, id)));
+  if (!s_fault_header_logged) {
+    LOG_WRN(
+        "Relay fault detected -> entering ERROR state, opening all relays\n");
+    s_fault_header_logged = true;
   }
 
-  RELAY_LOG_RAW("%s", "\n");
+  LOG_WRN("\t%s: %s\n", RelayNameForId(relay_id), FaultName(fault));
 }
 
-#endif /* RELAY_LOG_ENABLED */
+#endif /* LOG_ENABLED */
 
 static void ClearSimFaultInjection(void) {
-  for (uint8_t i = 0U; i < kRelayCount; ++i) {
+  for (uint8_t i = 0; i < kRelayCount; ++i) {
     const uint8_t channel = kRelayConfig[i].dpo_channel;
     RelayIoSim_SetStuckClosed(channel, false);
     RelayIoSim_SetStuckOpen(channel, false);
@@ -66,7 +75,7 @@ static void ClearSimFaultInjection(void) {
 }
 
 static void ConfigureSimChannels(void) {
-  for (uint8_t i = 0U; i < kRelayCount; ++i) {
+  for (uint8_t i = 0; i < kRelayCount; ++i) {
     RelayIoSim_ConfigureChannel(kRelayConfig[i].dpo_channel,
                                 kRelayConfig[i].type);
   }
@@ -78,22 +87,14 @@ static bool RunScenarioScript(const char *scenario_dir, const char *filename,
   ScenarioScript script;
 
   if (!ScenarioCsv_LoadFromDir(scenario_dir, filename, &script)) {
-    RELAY_LOG_ERR("Failed to load scenario CSV: %s/%s\n", scenario_dir,
-                  filename);
+    LOG_ERR("Failed to load scenario CSV: %s/%s\n", scenario_dir, filename);
     return false;
   }
 
-#if defined(RELAY_LOG_ENABLED)
-  RELAY_LOG_RAW("\n--- %s ---\n", script.label);
-#endif
-
-  for (uint32_t tick = 0U; tick < script.tick_count; ++tick) {
+  for (uint32_t tick = 0; tick < script.tick_count; ++tick) {
     ScenarioCsv_ApplyTick(&script, tick, kRelayConfig, kRelayCount, controller);
     RelayIoSim_Update();
     Scheduler_RunTask(scheduler);
-#if defined(RELAY_LOG_ENABLED)
-    PrintStatus(script.label, tick, controller);
-#endif
   }
 
   return true;
@@ -102,23 +103,29 @@ static bool RunScenarioScript(const char *scenario_dir, const char *filename,
 int main(int argc, char **argv) {
   RelayController controller;
   Scheduler scheduler;
-  const char *scenario_dir = "scenarios";
+  const char *scenario_dir = "simulation_scenarios";
 
   if (argc > 1) {
     scenario_dir = argv[1];
   }
 
   if (!RelayIo_Init()) {
-    RELAY_LOG_ERR("%s", "Failed to initialize relay IO\n");
+    LOG_ERR("Failed to initialize relay IO\n");
     return 1;
   }
 
   ConfigureSimChannels();
 
+#if defined(LOG_ENABLED)
+  s_fault_header_logged = false;
+#endif
   if (!RelayController_Init(&controller, kRelayConfig, kRelayCount)) {
     return 1;
   }
 
+#if defined(LOG_ENABLED)
+  RelayController_SetFaultNotifier(&controller, OnRelayFault, NULL);
+#endif
   RelayIoSim_Update();
   Scheduler_Init(&scheduler, &controller);
 
@@ -127,9 +134,16 @@ int main(int argc, char **argv) {
   }
 
   ClearSimFaultInjection();
+#if defined(LOG_ENABLED)
+  s_fault_header_logged = false;
+#endif
   if (!RelayController_Init(&controller, kRelayConfig, kRelayCount)) {
     return 1;
   }
+
+#if defined(LOG_ENABLED)
+  RelayController_SetFaultNotifier(&controller, OnRelayFault, NULL);
+#endif
   RelayIoSim_Update();
   Scheduler_Init(&scheduler, &controller);
 

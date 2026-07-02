@@ -9,18 +9,18 @@
 namespace {
 
 const RelayInstanceConfig kNoRelay = {
-    .relay_id = 0U,
+    .relay_id = 0,
     .type = kRelayTypeNormallyOpen,
-    .dpo_channel = 0U,
-    .di_channel = 0U,
+    .dpo_channel = 0,
+    .di_channel = 0,
     .name = "Relay_NO",
 };
 
 const RelayInstanceConfig kNcRelay = {
-    .relay_id = 1U,
+    .relay_id = 1,
     .type = kRelayTypeNormallyClosed,
-    .dpo_channel = 1U,
-    .di_channel = 1U,
+    .dpo_channel = 1,
+    .di_channel = 1,
     .name = "Relay_NC",
 };
 
@@ -32,7 +32,7 @@ TEST_F(RelayInstanceTest, InitDrivesRelayOpen) {
   RelayInstance_Init(&instance_, &kNoRelay);
 
   // Act
-  RunPlantAndInstance(&instance_, true, 5U);
+  RunPlantAndInstance(&instance_, true, 5);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetRequest(&instance_), kRelayCommandOpen);
@@ -47,14 +47,14 @@ TEST_F(RelayInstanceTest, CloseAndOpenNormallyOpenRelay) {
 
   // Act
   RelayInstance_SetRequest(&instance_, kRelayCommandClose);
-  RunPlantAndInstance(&instance_, true, 10U);
+  RunPlantAndInstance(&instance_, true, 10);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetContactState(&instance_), kRelayContactClosed);
 
   // Act
   RelayInstance_SetRequest(&instance_, kRelayCommandOpen);
-  RunPlantAndInstance(&instance_, true, 10U);
+  RunPlantAndInstance(&instance_, true, 10);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetContactState(&instance_), kRelayContactOpen);
@@ -67,13 +67,13 @@ TEST_F(RelayInstanceTest, DetectsWeldedFault) {
   RelayInstance_Init(&instance_, &kNoRelay);
 
   RelayInstance_SetRequest(&instance_, kRelayCommandClose);
-  RunPlantAndInstance(&instance_, true, 10U);
+  RunPlantAndInstance(&instance_, true, 10);
 
   RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
 
   // Act
   RelayInstance_SetRequest(&instance_, kRelayCommandOpen);
-  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2U);
+  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultWelded);
@@ -85,12 +85,12 @@ TEST_F(RelayInstanceTest, DetectsConstantlyOpenFaultOnNormallyClosedRelay) {
   RelayInstance_Init(&instance_, &kNcRelay);
 
   RelayInstance_SetRequest(&instance_, kRelayCommandClose);
-  RunPlantAndInstance(&instance_, true, 10U);
+  RunPlantAndInstance(&instance_, true, 10);
 
   RelayIoSim_SetStuckOpen(kNcRelay.dpo_channel, true);
 
   // Act
-  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2U);
+  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultConstantlyOpen);
@@ -104,7 +104,7 @@ TEST_F(RelayInstanceTest, AllowCloseFalseForcesOpenCommand) {
   RelayInstance_SetRequest(&instance_, kRelayCommandClose);
 
   // Act
-  RunPlantAndInstance(&instance_, false, 10U);
+  RunPlantAndInstance(&instance_, false, 10);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetContactState(&instance_), kRelayContactOpen);
@@ -119,7 +119,7 @@ TEST_F(RelayInstanceTest, BounceDuringCloseDoesNotLatchFault) {
   RelayInstance_SetRequest(&instance_, kRelayCommandClose);
 
   // Act 
-  RunPlantAndInstance(&instance_, true, 20U);
+  RunPlantAndInstance(&instance_, true, 20);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetContactState(&instance_), kRelayContactClosed);
@@ -136,5 +136,5 @@ TEST_F(RelayInstanceTest, ExposesConfiguredMetadata) {
 
   // Assert
   EXPECT_STREQ(name, "Relay_NO");
-  EXPECT_EQ(relay_id, 0U);
+  EXPECT_EQ(relay_id, 0);
 }

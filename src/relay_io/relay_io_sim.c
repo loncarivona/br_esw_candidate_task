@@ -15,7 +15,7 @@
 
 #include <string.h>
 
-#include "relay_control/common.h"
+#include "relay_control/relay_types.h"
 
 typedef struct {
   RelayDpoLevel commanded_dpo;
@@ -58,7 +58,7 @@ static RelayContactState ResolvePhysicalContact(const SimChannel *channel) {
 bool RelayIo_Init(void) {
   memset(s_channels, 0, sizeof(s_channels));
 
-  for (uint8_t i = 0U; i < kRelayMaxInstances; ++i) {
+  for (uint8_t i = 0; i < kRelayMaxInstances; ++i) {
     s_channels[i].commanded_dpo = kRelayDpoLow;
     s_channels[i].applied_dpo = kRelayDpoLow;
     s_channels[i].physical_contact = kRelayContactOpen;
@@ -77,7 +77,7 @@ void RelayIo_SetDpo(uint8_t channel, RelayDpoLevel level) {
   if (s_channels[channel].commanded_dpo != level) {
     s_channels[channel].commanded_dpo = level;
     s_channels[channel].transition_cycles =
-        (uint8_t)((kRelayDpoSettleMs + kRelayTaskPeriodMs - 1U) /
+        (uint8_t)((kRelayDpoSettleMs + kRelayTaskPeriodMs - 1) /
                   kRelayTaskPeriodMs);
   }
 }
@@ -123,20 +123,20 @@ void RelayIoSim_SetStuckOpen(uint8_t channel, bool stuck) {
 }
 
 void RelayIoSim_Update(void) {
-  for (uint8_t i = 0U; i < kRelayMaxInstances; ++i) {
+  for (uint8_t i = 0; i < kRelayMaxInstances; ++i) {
     SimChannel *channel = &s_channels[i];
 
-    if (channel->transition_cycles > 0U) {
+    if (channel->transition_cycles > 0) {
       --channel->transition_cycles;
-      if (channel->transition_cycles == 0U) {
+      if (channel->transition_cycles == 0) {
         channel->applied_dpo = channel->commanded_dpo;
-        channel->bounce_cycles = 2U;
+        channel->bounce_cycles = 2;
       }
     }
 
     channel->physical_contact = ResolvePhysicalContact(channel);
 
-    if (channel->bounce_cycles > 0U) {
+    if (channel->bounce_cycles > 0) {
       --channel->bounce_cycles;
       channel->reported_di =
           (channel->reported_di == kRelayDiHigh) ? kRelayDiLow : kRelayDiHigh;

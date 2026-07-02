@@ -9,7 +9,7 @@
 
 void Scheduler_Init(Scheduler *self, RelayController *controller) {
   self->_controller = controller;
-  self->_tick_count = 0U;
+  self->_tick_count = 0;
 }
 
 void Scheduler_RunTask(Scheduler *self) {

@@ -14,7 +14,7 @@
  *
  * @param [in] type - Relay type (NO or NC).
  * @param [in] command - Requested open/close command.
- * @return DPO level that realizes @p command for the given @p type.
+ * @return DPO level that realizes command for the given type.
  */
 static RelayDpoLevel Relay_CommandToDpo(RelayType type, RelayCommand command) {
   if (type == kRelayTypeNormallyOpen) {
@@ -46,7 +46,7 @@ static RelayContactState Relay_DiToContact(RelayDiLevel di_level) {
 }
 
 /**
- * @brief Drive @p command onto the DPO and restart the feedback settle window.
+ * @brief Drive a command onto the DPO and restart the feedback settle window.
  *
  * @param [in,out] self - Instance whose DPO is driven and state updated.
  * @param [in] command - Command to apply.
@@ -56,7 +56,7 @@ static void ApplyCommand(RelayInstance *self, RelayCommand command) {
 
   RelayIo_SetDpo(self->_config->dpo_channel, dpo);
   self->_applied_command = command;
-  self->_mismatch_cycles = 0U;
+  self->_mismatch_cycles = 0;
 }
 
 /**
@@ -66,7 +66,6 @@ static void ApplyCommand(RelayInstance *self, RelayCommand command) {
  * @param [in,out] self - Instance whose feedback is validated and fault latched.
  */
 static void DetectFault(RelayInstance *self) {
-  /* A fault is latched until controller restart (re-init). */
   if (self->_fault != kRelayFaultNone) {
     return;
   }
@@ -74,10 +73,8 @@ static void DetectFault(RelayInstance *self) {
   const RelayContactState expected =
       Relay_CommandToExpectedContact(self->_applied_command);
 
-  /* Count consecutive mismatches only. Any matching sample clears the run so
-   * alternating bounce (wrong, right, wrong, right, …) cannot false-positive. */
   if (self->_feedback_contact == expected) {
-    self->_mismatch_cycles = 0U;
+    self->_mismatch_cycles = 0;
     return;
   }
 
@@ -89,8 +86,7 @@ static void DetectFault(RelayInstance *self) {
     return;
   }
 
-  /* Mismatch persisted past the 30 ms settle window -> classify the fault.
-   * Reporting is left to the controller so this component stays IO-free. */
+  /* Mismatch persisted past the 30 ms settle window*/
   self->_fault = (self->_applied_command == kRelayCommandOpen)
                      ? kRelayFaultWelded
                      : kRelayFaultConstantlyOpen;
@@ -119,7 +115,11 @@ void RelayInstance_SetRequest(RelayInstance *self, RelayCommand request) {
 }
 
 RelayCommand RelayInstance_GetRequest(const RelayInstance *self) {
-  return (self != NULL) ? self->_request : kRelayCommandOpen;
+  if (self == NULL) {
+    return kRelayCommandOpen;
+  }
+
+  return self->_request;
 }
 
 void RelayInstance_Process(RelayInstance *self, bool allow_close) {
@@ -144,11 +144,19 @@ void RelayInstance_Process(RelayInstance *self, bool allow_close) {
 }
 
 RelayContactState RelayInstance_GetContactState(const RelayInstance *self) {
-  return (self != NULL) ? self->_feedback_contact : kRelayContactOpen;
+  if (self == NULL) {
+    return kRelayContactOpen;
+  }
+
+  return self->_feedback_contact;
 }
 
 RelayFault RelayInstance_GetFault(const RelayInstance *self) {
-  return (self != NULL) ? self->_fault : kRelayFaultNone;
+  if (self == NULL) {
+    return kRelayFaultNone;
+  }
+
+  return self->_fault;
 }
 
 const char *RelayInstance_GetName(const RelayInstance *self) {
@@ -161,7 +169,7 @@ const char *RelayInstance_GetName(const RelayInstance *self) {
 
 uint8_t RelayInstance_GetRelayId(const RelayInstance *self) {
   if (self == NULL || self->_config == NULL) {
-    return 0xFFU;
+    return 0xFF;
   }
 
   return self->_config->relay_id;

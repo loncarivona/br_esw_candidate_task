@@ -6,151 +6,49 @@
 
 #include "scenario/scenario_csv.h"
 
-#include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "relay_io/relay_io_sim.h"
 
-static void InitScript(ScenarioScript *out) {
-  out->label[0] = '\0';
-  out->tick_count = kScenarioCsvDefaultTicks;
-  out->event_count = 0U;
-}
-
-static char *Trim(char *s) {
-  while (*s != '\0' && isspace((unsigned char)*s)) {
-    ++s;
-  }
-
-  if (*s == '\0') {
-    return s;
-  }
-
-  char *end = s + strlen(s) - 1U;
-  while (end > s && isspace((unsigned char)*end)) {
-    *end = '\0';
-    --end;
-  }
-
-  return s;
-}
-
-static bool ParseAction(const char *token, ScenarioAction *action) {
-  if (strcmp(token, "close") == 0) {
-    *action = kScenarioActionClose;
+static bool ParseAction(const char *word, ScenarioAction *action) {
+  if (strcmp(word, "close") == 0) {
+    *action = kScenarioClose;
     return true;
   }
-
-  if (strcmp(token, "open") == 0) {
-    *action = kScenarioActionOpen;
+  if (strcmp(word, "open") == 0) {
+    *action = kScenarioOpen;
     return true;
   }
-
-  if (strcmp(token, "weld") == 0) {
-    *action = kScenarioActionWeld;
+  if (strcmp(word, "weld") == 0) {
+    *action = kScenarioWeld;
     return true;
   }
-
-  if (strcmp(token, "stuck_open") == 0) {
-    *action = kScenarioActionStuckOpen;
+  if (strcmp(word, "stuck") == 0) {
+    *action = kScenarioStuck;
     return true;
   }
-
   return false;
 }
 
-static bool ParseComment(const char *line, ScenarioScript *out) {
-  if (strncmp(line, "scenario:", 9U) == 0) {
-    const char *value = Trim((char *)(line + 9U));
-    (void)snprintf(out->label, sizeof(out->label), "%s", value);
-    return true;
-  }
-
-  if (strncmp(line, "ticks:", 6U) == 0) {
-    const char *value = Trim((char *)(line + 6U));
-    const unsigned long ticks = strtoul(value, NULL, 10);
-    if (ticks > 0UL) {
-      out->tick_count = (uint32_t)ticks;
-    }
-    return true;
-  }
-
-  return false;
-}
-
-static bool ParseEventLine(char *line, ScenarioScript *out) {
-  if (out->event_count >= kScenarioCsvMaxEvents) {
-    return false;
-  }
-
-  char *comma1 = strchr(line, ',');
-  if (comma1 == NULL) {
-    return false;
-  }
-
-  char *comma2 = strchr(comma1 + 1U, ',');
-  if (comma2 == NULL) {
-    return false;
-  }
-
-  *comma1 = '\0';
-  *comma2 = '\0';
-
-  char *tick_token = Trim(line);
-  char *relay_token = Trim(comma1 + 1U);
-  char *action_token = Trim(comma2 + 1U);
-
-  ScenarioEvent *event = &out->events[out->event_count];
-  ScenarioAction action;
-
-  if (!ParseAction(action_token, &action)) {
-    return false;
-  }
-
-  event->tick = (uint32_t)strtoul(tick_token, NULL, 10);
-  event->relay_id = (uint8_t)strtoul(relay_token, NULL, 10);
-  event->action = action;
-  ++out->event_count;
-  return true;
-}
-
-static bool FindDpoChannel(const RelayInstanceConfig *config, uint8_t config_count,
-                           uint8_t relay_id, uint8_t *dpo_channel) {
-  for (uint8_t i = 0U; i < config_count; ++i) {
+static uint8_t DpoForRelay(const RelayInstanceConfig *config, uint8_t count,
+                           uint8_t relay_id) {
+  for (uint8_t i = 0; i < count; ++i) {
     if (config[i].relay_id == relay_id) {
-      *dpo_channel = config[i].dpo_channel;
-      return true;
+      return config[i].dpo_channel;
     }
   }
-
-  return false;
-}
-
-bool ScenarioCsv_BuildPath(const char *dir, const char *filename, char *out,
-                           uint32_t out_size) {
-  if (dir == NULL || filename == NULL || out == NULL || out_size == 0U) {
-    return false;
-  }
-
-  const int written = snprintf(out, (size_t)out_size, "%s/%s", dir, filename);
-  return (written > 0) && ((uint32_t)written < out_size);
+  return 0xFF;
 }
 
 bool ScenarioCsv_LoadFromDir(const char *dir, const char *filename,
                              ScenarioScript *out) {
-  char path[kScenarioCsvMaxPathLen];
-
-  if (!ScenarioCsv_BuildPath(dir, filename, path, (uint32_t)sizeof(path))) {
+  if (dir == NULL || filename == NULL || out == NULL) {
     return false;
   }
 
-  return ScenarioCsv_Load(path, out);
-}
-
-bool ScenarioCsv_Load(const char *path, ScenarioScript *out) {
-  if (path == NULL || out == NULL) {
+  char path[256];
+  if (snprintf(path, sizeof(path), "%s/%s", dir, filename) < 0) {
     return false;
   }
 
@@ -159,62 +57,78 @@ bool ScenarioCsv_Load(const char *path, ScenarioScript *out) {
     return false;
   }
 
-  InitScript(out);
+  out->tick_count = kScenarioDefaultTicks;
+  out->event_count = 0;
 
-  char line[160];
+  char line[128];
   while (fgets(line, sizeof(line), file) != NULL) {
-    char *content = Trim(line);
-    if (*content == '\0') {
+    unsigned tick = 0;
+    unsigned relay = 0;
+    unsigned ticks = 0;
+    char action[16];
+
+    if (line[0] == '#' || line[0] == '\n') {
       continue;
     }
 
-    if (*content == '#') {
-      ++content;
-      content = Trim(content);
-      (void)ParseComment(content, out);
+    if (sscanf(line, "ticks %u", &ticks) == 1) {
+      if (ticks > 0) {
+        out->tick_count = ticks;
+      }
       continue;
     }
 
-    if (!ParseEventLine(content, out)) {
+    if (sscanf(line, "%u %u %15s", &tick, &relay, action) != 3) {
+      continue;
+    }
+
+    if (out->event_count >= kScenarioMaxEvents) {
       fclose(file);
       return false;
     }
+
+    ScenarioEvent *event = &out->events[out->event_count];
+    if (!ParseAction(action, &event->action)) {
+      fclose(file);
+      return false;
+    }
+
+    event->tick = tick;
+    event->relay_id = (uint8_t)relay;
+    ++out->event_count;
   }
 
   fclose(file);
-
-  if (out->label[0] == '\0') {
-    (void)snprintf(out->label, sizeof(out->label), "%s", path);
-  }
-
   return true;
 }
 
 static void ApplyEvent(const ScenarioEvent *event,
                        const RelayInstanceConfig *config, uint8_t config_count,
                        RelayController *controller) {
-  uint8_t dpo_channel = 0U;
-
   switch (event->action) {
-    case kScenarioActionClose:
+    case kScenarioClose:
       RelayController_SetRequest(controller, event->relay_id, kRelayCommandClose);
       break;
 
-    case kScenarioActionOpen:
+    case kScenarioOpen:
       RelayController_SetRequest(controller, event->relay_id, kRelayCommandOpen);
       break;
 
-    case kScenarioActionWeld:
-      if (FindDpoChannel(config, config_count, event->relay_id, &dpo_channel)) {
-        RelayIoSim_SetStuckClosed(dpo_channel, true);
+    case kScenarioWeld: {
+      const uint8_t dpo = DpoForRelay(config, config_count, event->relay_id);
+      if (dpo != 0xFF) {
+        RelayIoSim_SetStuckClosed(dpo, true);
       }
       break;
+    }
 
-    case kScenarioActionStuckOpen:
-      if (FindDpoChannel(config, config_count, event->relay_id, &dpo_channel)) {
-        RelayIoSim_SetStuckOpen(dpo_channel, true);
+    case kScenarioStuck: {
+      const uint8_t dpo = DpoForRelay(config, config_count, event->relay_id);
+      if (dpo != 0xFF) {
+        RelayIoSim_SetStuckOpen(dpo, true);
       }
       break;
+    }
 
     default:
       break;
@@ -229,7 +143,7 @@ void ScenarioCsv_ApplyTick(const ScenarioScript *script, uint32_t tick,
     return;
   }
 
-  for (uint16_t i = 0U; i < script->event_count; ++i) {
+  for (uint8_t i = 0; i < script->event_count; ++i) {
     const ScenarioEvent *event = &script->events[i];
     if (event->tick == tick) {
       ApplyEvent(event, config, config_count, controller);

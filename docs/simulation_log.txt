@@ -1,0 +1,6 @@
+[INF] Relay controller initialized with 2 relay(s)
+[WRN] Relay fault detected -> entering ERROR state, opening all relays
+[WRN] 	Relay_NO_1: WELDED
+[INF] Relay controller initialized with 2 relay(s)
+[WRN] Relay fault detected -> entering ERROR state, opening all relays
+[WRN] 	Relay_NC_1: CONSTANTLY_OPEN

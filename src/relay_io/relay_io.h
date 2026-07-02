@@ -3,15 +3,12 @@
  *
  * @brief Hardware-abstraction (HAL) interface for relay digital IO.
  *
- * Declares the operations the application needs (drive a digital power output,
- * read a digital input). This is the boundary between application logic and
- * hardware: the application only ever calls these functions. Exactly one
- * implementation is linked into the build:
+ * Declares functions to control and read state of GPIO (DPO and DI)
+ *  Only one implementation is linked into the build:
  *   - relay_io_hw.c  : real MCU GPIO (target)
- *   - relay_io_sim.c : simulated plant (host demo / tests)
+ *   - relay_io_sim.c : simulated demo
  *
- * This keeps a clean app/HW separation in the classic embedded-C style, without
- * runtime polymorphism.
+ * Keeps a clean app/HW separation without runtime polymorphism
  *
  */
 
@@ -21,25 +18,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/** Digital power output (DPO) drive level. */
 typedef enum {
   kRelayDpoLow = 0,
   kRelayDpoHigh,
 } RelayDpoLevel;
 
-/** Digital input (DI) sampled level. */
 typedef enum {
   kRelayDiLow = 0,
   kRelayDiHigh,
 } RelayDiLevel;
 
-/** @brief Initialize the digital IO (configure DPO outputs / DI inputs). */
+/** @brief Initialize the digital IO and configure DPO as outputs and DI inputs). */
 bool RelayIo_Init(void);
 
-/** @brief Drive the DPO of @p channel to @p level. */
+/** @brief Drive the DPO of a channel to requested level. */
 void RelayIo_SetDpo(uint8_t channel, RelayDpoLevel level);
 
-/** @brief Read the DI level of @p channel. */
+/** @brief Read the DI level of a channel. */
 RelayDiLevel RelayIo_GetDi(uint8_t channel);
 
 #endif /* RELAY_IO_RELAY_IO_H */

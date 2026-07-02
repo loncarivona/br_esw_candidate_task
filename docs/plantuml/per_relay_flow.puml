@@ -1,5 +1,5 @@
 @startuml per_relay_flow
-title Per-relay execution flow (one 5 ms task cycle)
+title Per-relay flow (one 5 ms cycle)
 
 skinparam shadowing false
 skinparam activity {
@@ -9,44 +9,44 @@ skinparam activity {
 
 start
 
-if (Controller in ERROR?) then (yes)
-  :Force effective request = OPEN;
+if (Controller in Error?) then (yes)
+  :block CLOSE, force OPEN;
 else (no)
-  :Use requested command;
+  :use requested command;
 endif
 
 if (Command changed?) then (yes)
-  :Compute DPO from NO/NC type;
-  :Write DPO via HAL;
-  :Reset mismatch window;
+  :map command to DPO (NO/NC);
+  :write DPO via HAL;
+  :reset mismatch counter;
 else (no)
 endif
 
-:Read DI feedback;
-:Convert DI to contact state;
+:read DI feedback;
+:map DI to contact state;
 
 if (Feedback matches\napplied command?) then (yes)
-  :Clear consecutive mismatch counter;
+  :clear mismatch counter;
   stop
 else (no)
-  :Increment consecutive mismatch counter;
-  if (Mismatch >= 6 cycles\n(30 ms)?) then (yes)
+  :increment mismatch counter;
+  if (6 consecutive mismatches\n(30 ms)?) then (yes)
     if (Applied command?) then (OPEN)
-      :Latch fault: WELDED;
+      :latch WELDED on this relay;
     else (CLOSE)
-      :Latch fault: CONSTANTLY_OPEN;
+      :latch CONSTANTLY_OPEN on this relay;
     endif
-    :Controller enters ERROR;
     stop
   else (no)
-    :Wait next cycle;
     stop
   endif
 endif
 
 note right
-  Any matching sample clears the mismatch run,
-  so alternating bounce cannot false-positive.
+  Matching feedback resets the counter,
+  so contact bounce does not trip a fault.
+  Controller switches to Error at the end
+  of Process() when any relay has a fault.
 end note
 
 @enduml

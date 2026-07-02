@@ -5,7 +5,7 @@
  *
  * Each call to Scheduler_RunTask() represents one kRelayTaskPeriodMs task
  * period. On the target this is triggered by a hardware timer or periodic RTOS
- * task; on the host demo main() calls it in a loop (logical ticks, not wall-clock).
+ * task; on the host demo main() calls it in a loop (logical ticks).
  *
  */
 

@@ -15,7 +15,7 @@ extern "C" {
 #include "test/common.h"
 
 inline void RunPlantAndController(RelayController *controller, uint32_t ticks) {
-  for (uint32_t i = 0U; i < ticks; ++i) {
+  for (uint32_t i = 0; i < ticks; ++i) {
     RelayIoSim_Update();
     RelayController_Process(controller);
   }
@@ -23,7 +23,7 @@ inline void RunPlantAndController(RelayController *controller, uint32_t ticks) {
 
 inline void RunPlantAndInstance(RelayInstance *instance, bool allow_close,
                                 uint32_t ticks) {
-  for (uint32_t i = 0U; i < ticks; ++i) {
+  for (uint32_t i = 0; i < ticks; ++i) {
     RelayIoSim_Update();
     RelayInstance_Process(instance, allow_close);
   }

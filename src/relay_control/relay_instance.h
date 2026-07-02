@@ -1,11 +1,11 @@
 /**
  * @file relay_instance.h
  *
- * @brief Reusable single-relay control and supervision component.
+ * @brief Reusable single-relay control and supervision component
  *
- * The RelayController owns an array of these. Each instance drives one DPO,
+ * The RelayController owns an array of relay instances. Each instance drives one DPO,
  * samples one DI, continuously compares the feedback against the applied
- * command, and latches a fault when a mismatch persists past the feedback
+ * command, and latches a fault when a mismatch persists longer than the feedback
  * settle window. Hardware access goes through the RelayIo_* interface, keeping
  * application logic separate from the IO layer.
  */
@@ -14,16 +14,8 @@
 #define RELAY_CONTROL_RELAY_INSTANCE_H
 
 #include "relay_io/relay_io.h"
-#include "relay_control/common.h"
+#include "relay_control/relay_types.h"
 
-/**
- * Runtime state of one relay.
- *
- * The layout is exposed in this header only so the controller can hold an array
- * of instances with static allocation (no heap). All fields are PRIVATE by
- * convention (leading underscore): other modules must go through the
- * RelayInstance_* functions and never read or write members directly.
- */
 typedef struct {
   const RelayInstanceConfig *_config;
   RelayCommand _request;
@@ -66,7 +58,7 @@ RelayFault RelayInstance_GetFault(const RelayInstance *self);
  * @brief Get the configured display name for this relay.
  *
  * @param [in] self - Instance to query.
- * @return Configured name string, or an empty string if @p self is NULL.
+ * @return Configured name string, or an empty string if invalid
  */
 const char *RelayInstance_GetName(const RelayInstance *self);
 
@@ -74,7 +66,7 @@ const char *RelayInstance_GetName(const RelayInstance *self);
  * @brief Get the configured logical relay identifier.
  *
  * @param [in] self - Instance to query.
- * @return Configured relay_id, or 0xFF if @p self is NULL or not configured.
+ * @return Configured relay_id, or 0xFF if invalid or not configured.
  */
 uint8_t RelayInstance_GetRelayId(const RelayInstance *self);
 

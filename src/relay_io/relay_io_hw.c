@@ -3,7 +3,7 @@
  *
  * @brief Real-target implementation of the relay digital IO interface.
  *
- * On the MCU this wraps the GPIO driver for the DPO/DI pins.
+ * On the MCU this would wrap the GPIO driver for the DPO/DI pins.
  * Link this file for a target build.
  *
  */
@@ -18,11 +18,11 @@ bool RelayIo_Init(void) {
 void RelayIo_SetDpo(uint8_t channel, RelayDpoLevel level) {
   (void)channel;
   (void)level;
-  /* TODO(target): drive the DPO pin for @p channel to @p level. */
+  /* TODO(target): set the DPO pin for a channel to a level. */
 }
 
 RelayDiLevel RelayIo_GetDi(uint8_t channel) {
   (void)channel;
-  /* TODO(target): read and return the DI level for @p channel. */
+  /* TODO(target): read and return the DI level for a channel. */
   return kRelayDiLow;
 }

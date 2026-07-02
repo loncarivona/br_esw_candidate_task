@@ -1,7 +1,0 @@
-# scenario: CONSTANTLY_OPEN
-# ticks: 40
-# tick,relay,action
-5,0,close
-5,1,close
-25,1,stuck_open
-25,1,close

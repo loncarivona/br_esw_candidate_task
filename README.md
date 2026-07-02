@@ -11,8 +11,13 @@ applied command, and latches faults when a mismatch persists for more than 30 ms
 - **WELDED** — command OPEN, feedback still closed
 - **CONSTANTLY_OPEN** — command CLOSE, feedback still open
 
-Any fault moves the controller into **ERROR**: all relays are forced open, close
+Any fault moves the controller into **Error**: all relays are forced open, close
 requests are blocked, and recovery requires re-initialization.
+
+Status is exposed through `RelayController_GetContactState()`, `GetFault()`,
+`GetState()`, and `GetRequest()`. `RelayController_SetFaultNotifier()` is an example
+of optional push notification on fault; the same pattern could report per-relay state
+via callback.
 
 The host demo runs two scenarios back-to-back (WELDED on relay 0, then
 CONSTANTLY_OPEN on relay 1, with controller re-init between them).
@@ -20,8 +25,7 @@ CONSTANTLY_OPEN on relay 1, with controller re-init between them).
 ## Prerequisites
 
 - Demo: `gcc`, `make`
-- Unit tests: additionally `cmake`, `g++`, and network access (first test run
-  downloads Google Test)
+- Unit tests: `g++`, `make` (cmake optional — `make test` works without it)
 
 ## Build and run
 
@@ -29,8 +33,8 @@ Two demo builds:
 
 | Target | Output | Logging |
 |--------|--------|---------|
-| `make prod` | `build/prod/relay_controller_demo` | off (no stdio, zero log overhead) |
-| `make debug` | `build/debug/relay_controller_demo` | on (`RELAY_LOG_*` via stdio on host) |
+| `make prod` | `build/prod/relay_controller_demo` | off (no stdio, no log overhead) |
+| `make debug` | `build/debug/relay_controller_demo` | on (`LOG_*` via stdio on host) |
 
 `make` defaults to **prod**. Unit tests always use the prod library (no logging).
 
@@ -48,25 +52,23 @@ make debug
 ./build/debug/relay_controller_demo
 ```
 
-Optional: pass a directory containing scenario CSV files (default: `scenarios/`):
+Optional: pass a directory containing scenario CSV files (default: `simulation_scenarios/`):
 
 ```bash
-./build/debug/relay_controller_demo scenarios
+./build/debug/relay_controller_demo simulation_scenarios
 ```
 
-Scenario format (`scenarios/welded.csv`):
+Scenario format (`simulation_scenarios/welded.csv`):
 
-```csv
-# scenario: WELDED
-# ticks: 40
-# tick,relay,action
-5,0,close
-5,1,close
-25,0,weld
-25,0,open
+```
+ticks 40
+5 0 close
+5 1 close
+25 0 weld
+25 0 open
 ```
 
-Actions: `close`, `open`, `weld` (stuck closed), `stuck_open`.
+Actions: `close`, `open`, `weld` (stuck closed), `stuck` (stuck open).
 
 Or build and run in one step:
 
@@ -86,9 +88,10 @@ make test
 ```
 
 The first run downloads Google Test into `third_party/googletest/` (gitignored).
-Requires `cmake`, `g++`, and network access.
+Requires `g++` and network access. `cmake` is optional — if it is not installed,
+`make test` builds via `test-gcc` instead.
 
-Or with CMake directly:
+Or with CMake directly (requires `cmake`):
 
 ```bash
 bash scripts/fetch_googletest.sh
@@ -99,15 +102,17 @@ ctest --test-dir build/test --output-on-failure
 
 ## Documentation
 
-- Write-up: `docs/BR_ESW_Relay_Controller_Solution.txt`
-- Diagrams: `docs/architecture.md` (Mermaid + PlantUML in `docs/plantuml/`)
+- PDF: `docs/BR_ESW_Relay_Controller_Solution.pdf`
+- Sample demo log: `docs/simulation_log.txt`
+- Architecture: `docs/architecture.md`
+- Diagram PNGs: `docs/diagram_images/`
+- Diagram sources: `docs/plantuml/`
 
 ## Layout
 
 | Topic | Location |
 |-------|----------|
-| Design, assumptions, exam mapping | `docs/BR_ESW_Relay_Controller_Solution.txt` |
-| Module / state / flow diagrams | `docs/architecture.md`, `docs/plantuml/` |
+| Module / state / flow diagrams | `docs/architecture.md`, `docs/plantuml/`, `docs/diagram_images/` |
 | Application logic | `src/relay_control/`, `src/scheduler/`, `src/main.c` |
 | HAL (simulated plant / target stub) | `src/relay_io/` |
 | Unit tests | `test/` |
@@ -122,5 +127,6 @@ docs/
 ```
 
 Relay table is in `main.c`. Call `RelayIo_Init()` before `RelayController_Init()`.
+Optionally call `RelayController_SetFaultNotifier()` after init.
 
 For target build, implement `relay_io_hw.c` and set `RELAY_IO_SRC` in the Makefile.

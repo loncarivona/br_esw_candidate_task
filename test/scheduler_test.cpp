@@ -13,10 +13,10 @@ extern "C" {
 namespace {
 
 const RelayInstanceConfig kNoRelay = {
-    .relay_id = 0U,
+    .relay_id = 0,
     .type = kRelayTypeNormallyOpen,
-    .dpo_channel = 0U,
-    .di_channel = 0U,
+    .dpo_channel = 0,
+    .di_channel = 0,
     .name = "Relay_NO",
 };
 
@@ -27,21 +27,21 @@ TEST(SchedulerTest, RunTaskIncrementsTickCount) {
   ASSERT_TRUE(RelayIo_Init());
 
   RelayController controller{};
-  ASSERT_TRUE(RelayController_Init(&controller, &kNoRelay, 1U));
+  ASSERT_TRUE(RelayController_Init(&controller, &kNoRelay, 1));
   RelayIoSim_ConfigureChannel(kNoRelay.dpo_channel, kNoRelay.type);
 
   Scheduler scheduler{};
   Scheduler_Init(&scheduler, &controller);
-  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 0U);
+  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 0);
 
   // Act
-  for (uint32_t i = 0U; i < 5U; ++i) {
+  for (uint32_t i = 0; i < 5; ++i) {
     RelayIoSim_Update();
     Scheduler_RunTask(&scheduler);
   }
 
   // Assert
-  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 5U);
+  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 5);
 }
 
 TEST(SchedulerTest, RunTaskDrivesControllerProcessing) {
@@ -49,22 +49,22 @@ TEST(SchedulerTest, RunTaskDrivesControllerProcessing) {
   ASSERT_TRUE(RelayIo_Init());
 
   RelayController controller{};
-  ASSERT_TRUE(RelayController_Init(&controller, &kNoRelay, 1U));
+  ASSERT_TRUE(RelayController_Init(&controller, &kNoRelay, 1));
   RelayIoSim_ConfigureChannel(kNoRelay.dpo_channel, kNoRelay.type);
 
   Scheduler scheduler{};
   Scheduler_Init(&scheduler, &controller);
 
-  RelayController_SetRequest(&controller, 0U, kRelayCommandClose);
+  RelayController_SetRequest(&controller, 0, kRelayCommandClose);
 
   // Act
-  for (uint32_t i = 0U; i < 10U; ++i) {
+  for (uint32_t i = 0; i < 10; ++i) {
     RelayIoSim_Update();
     Scheduler_RunTask(&scheduler);
   }
 
   // Assert
-  EXPECT_EQ(RelayController_GetContactState(&controller, 0U),
+  EXPECT_EQ(RelayController_GetContactState(&controller, 0),
             kRelayContactClosed);
-  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 10U);
+  EXPECT_EQ(Scheduler_GetTickCount(&scheduler), 10);
 }

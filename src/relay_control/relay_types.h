@@ -1,12 +1,11 @@
 /**
- * @file common.h
+ * @file relay_types.h
  *
- * @brief Shared constants for the relay controller
- *
+ * @brief Shared types and timing constants for the relay controller.
  */
 
-#ifndef RELAY_CONTROL_COMMON_H
-#define RELAY_CONTROL_COMMON_H
+#ifndef RELAY_CONTROL_RELAY_TYPES_H
+#define RELAY_CONTROL_RELAY_TYPES_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -33,7 +32,7 @@ typedef enum {
 } RelayFault;
 
 typedef enum {
-  kRelayControllerStateNormal = 0,
+  kRelayControllerStateOn = 0,
   kRelayControllerStateError,
 } RelayControllerState;
 
@@ -52,4 +51,12 @@ typedef struct {
   const char *name;
 } RelayInstanceConfig;
 
-#endif /* RELAY_CONTROL_COMMON_H */
+/**
+ * Optional notification when a relay fault triggers On -> Error.
+ *
+ * Register with RelayController_SetFaultNotifier(). NULL disables notifications.
+ * Invoked once per faulted relay from EnterErrorState() only.
+ */
+typedef void (*RelayFaultNotifier)(uint8_t relay_id, RelayFault fault, void *context);
+
+#endif /* RELAY_CONTROL_RELAY_TYPES_H */

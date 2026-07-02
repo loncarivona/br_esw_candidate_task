@@ -10,7 +10,7 @@ CORE_SRCS = \
 	src/relay_control/relay_controller.c \
 	src/scheduler/scheduler.c
 
-.PHONY: all prod debug clean run run-prod run-debug test
+.PHONY: all prod debug clean run run-prod run-debug test test-cmake test-gcc
 
 all: prod
 
@@ -22,7 +22,7 @@ debug:
 
 ifeq ($(BUILD_TYPE),debug)
 BUILD_DIR = build/debug
-CFLAGS += -DRELAY_LOG_ENABLED
+CFLAGS += -DLOG_ENABLED
 LOG_SRC = src/relay_control/relay_log_host.c
 else
 BUILD_DIR = build/prod
@@ -54,14 +54,55 @@ run: run-debug
 clean:
 	rm -rf build
 
+# Unit tests — cmake if available, otherwise direct g++ build (no cmake required).
 TEST_BUILD_DIR = build/test
-CMAKE ?= $(firstword $(wildcard /usr/bin/cmake /usr/bin/cmake3) cmake)
+TEST_GCC_DIR = build/test-gcc
+CMAKE := $(shell command -v cmake 2>/dev/null || command -v cmake3 2>/dev/null)
 GOOGLETEST_DIR = third_party/googletest
+GTEST_DIR = $(GOOGLETEST_DIR)/googletest
+GTEST_INC = $(GTEST_DIR)/include
 
-test: $(GOOGLETEST_DIR)/CMakeLists.txt
+CXX ?= g++
+TEST_CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic -Isrc -Itest/include -I$(GTEST_INC) -pthread
+TEST_CXX_SRCS = \
+	test/main.cpp \
+	test/relay_controller_test.cpp \
+	test/relay_instance_test.cpp \
+	test/scheduler_test.cpp
+TEST_CXX_OBJS = $(patsubst %.cpp,$(TEST_GCC_DIR)/%.o,$(TEST_CXX_SRCS))
+TEST_C_OBJS = $(patsubst %.c,$(TEST_GCC_DIR)/%.o,$(CORE_SRCS))
+GTEST_OBJ = $(TEST_GCC_DIR)/gtest-all.o
+TEST_EXE = $(TEST_GCC_DIR)/relay_controller_tests
+
+ifeq ($(CMAKE),)
+test: test-gcc
+else
+test: test-cmake
+endif
+
+test-cmake: $(GOOGLETEST_DIR)/CMakeLists.txt
 	$(CMAKE) -S . -B $(TEST_BUILD_DIR) -DBUILD_DEMO=OFF
 	$(CMAKE) --build $(TEST_BUILD_DIR)
 	ctest --test-dir $(TEST_BUILD_DIR) --output-on-failure
+
+test-gcc: $(GOOGLETEST_DIR)/googletest/CMakeLists.txt $(TEST_EXE)
+	$(TEST_EXE)
+
+$(TEST_EXE): $(GTEST_OBJ) $(TEST_C_OBJS) $(TEST_CXX_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) $^ -o $@ $(LDFLAGS) -pthread
+
+$(TEST_GCC_DIR)/gtest-all.o: $(GTEST_DIR)/src/gtest-all.cc
+	@mkdir -p $(dir $@)
+	$(CXX) $(TEST_CXXFLAGS) -I$(GTEST_DIR) -c $< -o $@
+
+$(TEST_GCC_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(TEST_CXXFLAGS) -c $< -o $@
+
+$(TEST_GCC_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(GOOGLETEST_DIR)/CMakeLists.txt:
 	bash scripts/fetch_googletest.sh

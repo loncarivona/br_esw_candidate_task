@@ -141,9 +141,9 @@ TEST_F(RelayControllerTest, WeldedFaultEntersErrorState) {
 
   RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
 
-  // Act
+  // Act — fault is allowed only after the 30 ms settle window elapses.
   RelayController_SetRequest(&controller_, 0, kRelayCommandOpen);
-  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 2);
+  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 1);
 
   // Assert
   EXPECT_EQ(RelayController_GetFault(&controller_, 0), kRelayFaultWelded);
@@ -161,8 +161,8 @@ TEST_F(RelayControllerTest, ConstantlyOpenFaultEntersErrorState) {
 
   RelayIoSim_SetStuckOpen(kNcRelay.dpo_channel, true);
 
-  // Act
-  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 2);
+  // Act — fault is allowed only after the 30 ms settle window elapses.
+  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 1);
 
   // Assert
   EXPECT_EQ(RelayController_GetFault(&controller_, 1),
@@ -207,9 +207,9 @@ TEST_F(RelayControllerTest, FaultNotifierCalledOnEnterErrorState) {
 
   RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
 
-  // Act
+  // Act — fault is allowed only after the 30 ms settle window elapses.
   RelayController_SetRequest(&controller_, 0, kRelayCommandOpen);
-  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 2);
+  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 1);
 
   // Assert
   EXPECT_EQ(RelayController_GetFault(&controller_, 0), kRelayFaultWelded);
@@ -231,7 +231,7 @@ TEST_F(RelayControllerTest, ErrorStateBlocksCloseRequests) {
 
   RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
   RelayController_SetRequest(&controller_, 0, kRelayCommandOpen);
-  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 2);
+  RunPlantAndController(&controller_, kRelayFeedbackSettleCycles + 1);
   ASSERT_EQ(RelayController_GetState(&controller_), kRelayControllerStateError);
 
   // Act

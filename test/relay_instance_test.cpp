@@ -71,9 +71,33 @@ TEST_F(RelayInstanceTest, DetectsWeldedFault) {
 
   RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
 
-  // Act
+  // Act — fault is allowed only after the 30 ms settle window elapses.
   RelayInstance_SetRequest(&instance_, kRelayCommandOpen);
-  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2);
+  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 1);
+
+  // Assert
+  EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultWelded);
+}
+
+TEST_F(RelayInstanceTest, DoesNotLatchWeldedFaultBeforeSettleWindow) {
+  // Arrange
+  RelayIoSim_ConfigureChannel(kNoRelay.dpo_channel, kNoRelay.type);
+  RelayInstance_Init(&instance_, &kNoRelay);
+
+  RelayInstance_SetRequest(&instance_, kRelayCommandClose);
+  RunPlantAndInstance(&instance_, true, 10);
+
+  RelayIoSim_SetStuckClosed(kNoRelay.dpo_channel, true);
+
+  // Act — one tick before the 30 ms window ends (25 ms at 5 ms period).
+  RelayInstance_SetRequest(&instance_, kRelayCommandOpen);
+  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles);
+
+  // Assert
+  EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultNone);
+
+  // Act — next tick reaches 30 ms; mismatch is now confirmed.
+  RunPlantAndInstance(&instance_, true, 1);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultWelded);
@@ -89,8 +113,8 @@ TEST_F(RelayInstanceTest, DetectsConstantlyOpenFaultOnNormallyClosedRelay) {
 
   RelayIoSim_SetStuckOpen(kNcRelay.dpo_channel, true);
 
-  // Act
-  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 2);
+  // Act — fault is allowed only after the 30 ms settle window elapses.
+  RunPlantAndInstance(&instance_, true, kRelayFeedbackSettleCycles + 1);
 
   // Assert
   EXPECT_EQ(RelayInstance_GetFault(&instance_), kRelayFaultConstantlyOpen);

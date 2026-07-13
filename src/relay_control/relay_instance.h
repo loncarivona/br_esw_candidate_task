@@ -5,9 +5,9 @@
  *
  * The RelayController owns an array of relay instances. Each instance drives one DPO,
  * samples one DI, continuously compares the feedback against the applied
- * command, and latches a fault when a mismatch persists longer than the feedback
- * settle window. Hardware access goes through the RelayIo_* interface, keeping
- * application logic separate from the IO layer.
+ * command, and latches a fault when feedback still disagrees with the applied
+ * command after the 30 ms settle window. Hardware access goes through the
+ * RelayIo_* interface, keeping application logic separate from the IO layer.
  */
 
 #ifndef RELAY_CONTROL_RELAY_INSTANCE_H
@@ -22,6 +22,7 @@ typedef struct {
   RelayCommand _applied_command;
   RelayContactState _feedback_contact;
   RelayFault _fault;
+  uint16_t _ticks_since_command;
   uint16_t _mismatch_cycles;
 } RelayInstance;
 

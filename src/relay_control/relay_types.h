@@ -39,7 +39,12 @@ typedef enum {
 enum {
   kRelayTaskPeriodMs = 5,
   kRelayDpoSettleMs = 1,
-  kRelayFeedbackSettleCycles = 6, /* 30 ms fault window at 5 ms task period */
+  /* Spec: feedback may take up to 30 ms to stabilise after a command change. */
+  kRelayFeedbackSettleMs = 30,
+  kRelayFeedbackSettleCycles =
+      (kRelayFeedbackSettleMs + kRelayTaskPeriodMs - 1) / kRelayTaskPeriodMs,
+  /* Mismatches counted only after the settle window; one sample confirms fault. */
+  kRelayFaultConfirmCycles = 1,
   kRelayMaxInstances = 10,
 };
 

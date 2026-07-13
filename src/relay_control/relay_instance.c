@@ -46,7 +46,7 @@ static RelayContactState Relay_DiToContact(RelayDiLevel di_level) {
 }
 
 /**
- * @brief Drive a command onto the DPO and restart the feedback settle window.
+ * @brief Drive a command onto the DPO and restart supervision timing.
  *
  * @param [in,out] self - Instance whose DPO is driven and state updated.
  * @param [in] command - Command to apply.
@@ -56,17 +56,27 @@ static void ApplyCommand(RelayInstance *self, RelayCommand command) {
 
   RelayIo_SetDpo(self->_config->dpo_channel, dpo);
   self->_applied_command = command;
+  self->_ticks_since_command = 0;
   self->_mismatch_cycles = 0;
 }
 
 /**
- * @brief Latch a fault when feedback disagrees with the applied command past
- *        the settle window.
+ * @brief Latch a fault when feedback still disagrees after the settle window.
+ *
+ * No fault is declared during the first kRelayFeedbackSettleCycles task periods
+ * after a command change, matching the 30 ms maximum feedback settling time.
+ * After that window, kRelayFaultConfirmCycles consecutive mismatches latch
+ * the fault.
  *
  * @param [in,out] self - Instance whose feedback is validated and fault latched.
  */
 static void DetectFault(RelayInstance *self) {
   if (self->_fault != kRelayFaultNone) {
+    return;
+  }
+
+  if (self->_ticks_since_command < kRelayFeedbackSettleCycles) {
+    self->_mismatch_cycles = 0;
     return;
   }
 
@@ -82,11 +92,10 @@ static void DetectFault(RelayInstance *self) {
     ++self->_mismatch_cycles;
   }
 
-  if (self->_mismatch_cycles < kRelayFeedbackSettleCycles) {
+  if (self->_mismatch_cycles < kRelayFaultConfirmCycles) {
     return;
   }
 
-  /* Mismatch persisted past the 30 ms settle window*/
   self->_fault = (self->_applied_command == kRelayCommandOpen)
                      ? kRelayFaultWelded
                      : kRelayFaultConstantlyOpen;
@@ -135,6 +144,8 @@ void RelayInstance_Process(RelayInstance *self, bool allow_close) {
 
   if (effective_request != self->_applied_command) {
     ApplyCommand(self, effective_request);
+  } else if (self->_ticks_since_command < UINT16_MAX) {
+    ++self->_ticks_since_command;
   }
 
   const RelayDiLevel feedback_level = RelayIo_GetDi(self->_config->di_channel);

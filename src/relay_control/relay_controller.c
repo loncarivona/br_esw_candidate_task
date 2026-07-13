@@ -104,26 +104,6 @@ static void ForceOpenAll(RelayController *self) {
 }
 
 /**
- * @brief Return whether any relay instance has a latched fault.
- *
- * @param [in] self - Controller whose instances are checked.
- * @return true if at least one instance reports a fault, false otherwise.
- */
-static bool AnyFaultDetected(const RelayController *self) {
-  if (self == NULL) {
-    return false;
-  }
-
-  for (uint8_t i = 0; i < self->_instance_count; ++i) {
-    if (RelayInstance_GetFault(&self->_instances[i]) != kRelayFaultNone) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
  * @brief Notify the application about each latched fault (On -> Error entry).
  *
  * @param [in] self - Controller entering the error state.
@@ -158,15 +138,25 @@ static void EnterErrorState(RelayController *self) {
 }
 
 /**
- * @brief On-state periodic step: supervise relays and detect faults.
+ * @brief On-state periodic step: supervise relays and enter Error on fault.
+ *
+ * Stops processing further relays as soon as a fault is latched so no additional
+ * close requests are applied before the global safety reaction runs.
  *
  * @param [in,out] self - Controller in the On state.
  */
 static void ProcessOnState(RelayController *self) {
-  ProcessAllRelays(self, true);
+  if (self == NULL) {
+    return;
+  }
 
-  if (AnyFaultDetected(self)) {
-    EnterErrorState(self);
+  for (uint8_t i = 0; i < self->_instance_count; ++i) {
+    RelayInstance_Process(&self->_instances[i], true);
+
+    if (RelayInstance_GetFault(&self->_instances[i]) != kRelayFaultNone) {
+      EnterErrorState(self);
+      return;
+    }
   }
 }
 
